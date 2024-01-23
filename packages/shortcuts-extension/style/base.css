@@ -265,7 +265,7 @@
   border-width: var(--jp-border-width);
   margin: 3px 0;
   padding: 5px 6px;
-  border: none;
+  color: var(--jp-ui-inverse-font-color1);
 }
 
 .jp-Shortcuts-Plus:hover {
