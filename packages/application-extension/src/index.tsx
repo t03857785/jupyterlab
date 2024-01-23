@@ -46,6 +46,7 @@ import {
   buildIcon,
   ContextMenuSvg,
   jupyterIcon,
+  Overlay,
   RankedMenu,
   Switch
 } from '@jupyterlab/ui-components';
@@ -113,6 +114,9 @@ namespace CommandIDs {
   export const tree: string = 'router:tree';
 
   export const switchSidebar = 'sidebar:switch';
+
+  export const activateSidebarOverlays: string =
+    'application:activate-sidebar-overlays';
 }
 
 /**
@@ -386,6 +390,61 @@ const mainCommands: JupyterFrontEndPlugin<void> = {
         isEnabled: () => !labShell.isEmpty('right')
       });
 
+      commands.addCommand(CommandIDs.activateSidebarOverlays, {
+        label: trans.__('Show Side bar overlays'),
+        execute: args => {
+          console.log('correct');
+          if (args.side != 'left' && args.side != 'right') {
+            throw Error(`Unsupported sidebar: ${args.side}`);
+          }
+
+          const widgets = Array.from(labShell.widgets(args.side));
+          for (let index = 0; index < widgets.length; index++) {
+            let elementId = widgets[index].id;
+            let focusElement = document.querySelector(
+              "[data-id='" + elementId + "']"
+            );
+
+            if (focusElement && !focusElement.classList.contains('overlay')) {
+              const options: Overlay.IOptions = {
+                hostElement: focusElement,
+                classConfig: {
+                  class: 'JP-Overlay',
+                  title: 'JP-Overlay-Tooltip'
+                },
+                cssConfig: {
+                  position: 'absolute',
+                  top: '67%',
+                  left: '45%',
+                  width: '47%',
+                  height: '32%',
+                  'border-Radius': '25%',
+                  'z-index': 'inherit',
+                  'text-align': 'center',
+                  color: 'rgb(255, 255, 255)',
+                  background: 'rgb(51, 51, 51)',
+                  visibility: 'hidden'
+                }
+              };
+
+              Overlay.createOverlay(options);
+            }
+
+            let getOverlayDiv = focusElement?.children.item(2);
+            if (getOverlayDiv) {
+              let shortCutNum = (1 + index).toString();
+              getOverlayDiv.innerHTML = shortCutNum;
+            }
+            if ((getOverlayDiv as HTMLElement).style) {
+              (getOverlayDiv as HTMLElement).style.visibility = 'visible';
+              setTimeout(() => {
+                (getOverlayDiv as HTMLElement).style.visibility = 'hidden';
+              }, 1000);
+            }
+          }
+        }
+      });
+
       commands.addCommand(CommandIDs.toggleSidebarWidget, {
         label: trans.__('Toggle Sidebar Element'),
         execute: args => {
@@ -550,7 +609,8 @@ const mainCommands: JupyterFrontEndPlugin<void> = {
         CommandIDs.toggleRightArea,
         CommandIDs.togglePresentationMode,
         CommandIDs.toggleMode,
-        CommandIDs.resetLayout
+        CommandIDs.resetLayout,
+        CommandIDs.activateSidebarOverlays
       ].forEach(command => palette.addItem({ command, category }));
 
       ['right', 'left'].forEach(side => {
