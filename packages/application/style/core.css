@@ -91,6 +91,11 @@ body {
   align-items: center;
 }
 
+.jp-ScanModepanel-ariaLive {
+  width: 0;
+  overflow: hidden;
+}
+
 .jp-ContentPanel-ariaLive {
   width: 0;
   overflow: hidden;

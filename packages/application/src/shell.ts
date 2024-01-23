@@ -419,6 +419,13 @@ export class LabShell extends Widget implements JupyterFrontEnd.IShell {
     ariaLiveRegion.className = 'jp-ContentPanel-ariaLive';
     hboxPanel.node.appendChild(ariaLiveRegion);
 
+    const scanModeOffRegion = document.createElement('div');
+    scanModeOffRegion.setAttribute('aria-live', 'assertive');
+    scanModeOffRegion.setAttribute('role', 'region');
+    scanModeOffRegion.setAttribute('id', 'screen-reader-aria-live');
+    scanModeOffRegion.className = 'jp-ScanModepanel-ariaLive';
+    hboxPanel.node.appendChild(scanModeOffRegion);
+
     rootLayout.direction = 'top-to-bottom';
     rootLayout.spacing = 0; // TODO make this configurable?
     // Use relative sizing to set the width of the side panels.

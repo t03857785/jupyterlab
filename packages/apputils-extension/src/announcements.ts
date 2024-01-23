@@ -153,6 +153,14 @@ export const announcements: JupyterFrontEndPlugin<void> = {
             ]
           }
         );
+        let scanModeOffRegion = document.getElementById(
+          'screen-reader-aria-live'
+        );
+        scanModeOffRegion!.append(
+          trans.__(
+            'To get the best user experience with JupyterLab when using a screenreader, please disable scan/browse mode.'
+          )
+        );
       } else {
         await fetchNews();
       }
