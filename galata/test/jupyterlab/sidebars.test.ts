@@ -3,13 +3,20 @@
 
 import { expect, galata, Handle, test } from '@jupyterlab/galata';
 
-const sidebarIds: galata.SidebarTabId[] = [
+const leftSidebarIds: galata.SidebarTabId[] = [
   'filebrowser',
-  'jp-property-inspector',
   'jp-running-sessions',
   'table-of-contents',
   'extensionmanager.main-view'
 ];
+
+const rightSidebarIds: galata.SidebarTabId[] = [
+  'jp-property-inspector',
+  'jp-debugger-sidebar'
+];
+
+const sidebarIds: galata.SidebarTabId[] =
+  leftSidebarIds.concat(rightSidebarIds);
 
 /**
  * Add provided text as label on first tab in given tabbar.
@@ -192,5 +199,159 @@ test.describe('Sidebars', () => {
       'Table of Contents section'
     );
     expect(tableOfContentsElementRole).toEqual('region');
+  });
+});
+
+const runningSessionsElementAriaLabels: string[] = [
+  'Open Tabs Section',
+  'Kernels Section',
+  'Language servers Section',
+  'Terminals Section'
+];
+const debuggerElementAriaLabels: string[] = [
+  'Variables Section',
+  'Callstack Section',
+  'Breakpoints Section',
+  'Source Section',
+  'Kernel Sources Section'
+];
+const propertyElementAriaLabels: string[] = [
+  'Warning Section',
+  'Installed Section',
+  'Discover Section'
+];
+
+const sessionsAndDebuggerAriaLabels: string[] =
+  runningSessionsElementAriaLabels.concat(debuggerElementAriaLabels);
+
+test.describe('Sidebar keyboard navigation @a11y', () => {
+  leftSidebarIds.forEach(leftSidebarId => {
+    test(`Open Sidebar tab ${leftSidebarId} via keyboard navigation`, async ({
+      page
+    }) => {
+      await page.goto();
+
+      await page.sidebar.close('left');
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        await page.keyboard.press('Tab');
+        let IsFocused = await page.evaluate(
+          () => document.activeElement?.getAttribute('data-id')
+        );
+        if (IsFocused === leftSidebarIds[0]) {
+          break;
+        }
+      }
+
+      // eslint-disable-next-line no-constant-condition
+      while (leftSidebarId !== leftSidebarIds[0]) {
+        await page.keyboard.press('ArrowDown');
+        let IsFocused = await page.evaluate(
+          () => document.activeElement?.getAttribute('data-id')
+        );
+        if (IsFocused === leftSidebarId) {
+          break;
+        }
+      }
+
+      await page.keyboard.press('Enter');
+
+      expect(await page.sidebar.isTabOpen(leftSidebarId)).toEqual(true);
+    });
+  });
+
+  rightSidebarIds.forEach(rightSidebarId => {
+    test(`Open Sidebar tab ${rightSidebarId} via keyboard navigation`, async ({
+      page
+    }) => {
+      await page.goto();
+
+      await page.sidebar.close('right');
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        await page.keyboard.press('Tab');
+        let propertyInspectorIsFocused = await page.evaluate(
+          () => document.activeElement?.getAttribute('data-id')
+        );
+        if (propertyInspectorIsFocused === rightSidebarIds[0]) {
+          break;
+        }
+      }
+
+      // eslint-disable-next-line no-constant-condition
+      while (rightSidebarId !== rightSidebarIds[0]) {
+        await page.keyboard.press('ArrowDown');
+        let IsFocused = await page.evaluate(
+          () => document.activeElement?.getAttribute('data-id')
+        );
+        if (IsFocused === rightSidebarId) {
+          break;
+        }
+      }
+      await page.keyboard.press('Enter');
+
+      expect(await page.sidebar.isTabOpen(rightSidebarId)).toEqual(true);
+    });
+  });
+
+  sessionsAndDebuggerAriaLabels.forEach(sessionsAndDebuggerAriaLabel => {
+    test(`Open accordion panels ${sessionsAndDebuggerAriaLabel} via keyboard navigation`, async ({
+      page
+    }) => {
+      await page.goto();
+
+      await page.sidebar.openTab('jp-running-sessions');
+      await page.sidebar.openTab('jp-debugger-sidebar');
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        await page.keyboard.press('Tab');
+        let IsFocused = await page.evaluate(
+          () => document.activeElement?.getAttribute('aria-label')
+        );
+        if (IsFocused === sessionsAndDebuggerAriaLabel) {
+          break;
+        }
+      }
+
+      await page.keyboard.press('Enter');
+
+      const isExpanded = await page.evaluate(
+        () => document.activeElement?.getAttribute('aria-expanded')
+      );
+
+      expect(isExpanded).toBeTruthy();
+    });
+  });
+
+  propertyElementAriaLabels.forEach(propertyElementAriaLabel => {
+    test(`Open accordion panels ${propertyElementAriaLabel} via keyboard navigation`, async ({
+      page
+    }) => {
+      await page.goto();
+
+      await page.sidebar.openTab('extensionmanager.main-view');
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        await page.keyboard.press('Tab');
+        let IsFocused = await page.evaluate(
+          () => document.activeElement?.getAttribute('aria-label')
+        );
+        if (IsFocused === propertyElementAriaLabel) {
+          break;
+        }
+      }
+
+      await page.keyboard.press('Enter');
+
+      const isExpanded = await page.evaluate(
+        () => document.activeElement?.getAttribute('aria-expanded')
+      );
+
+      expect(isExpanded).toBeTruthy();
+    });
   });
 });
